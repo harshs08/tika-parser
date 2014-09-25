@@ -8,7 +8,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+
 import java.util.ArrayList;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -24,25 +26,28 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
- * Plain text parser. The text encoding of the document stream is automatically
- * detected based on the byte patterns found at the beginning of the stream. The
- * input metadata key
- * {@link org.apache.tika.metadata.HttpHeaders#CONTENT_ENCODING} is used as an
- * encoding hint if the automatic encoding detection fails.
+ * Plain text parser. The text encoding of the document stream is
+ * automatically detected based on the byte patterns found at the
+ * beginning of the stream. The input metadata key
+ * {@link org.apache.tika.metadata.HttpHeaders#CONTENT_ENCODING} is used
+ * as an encoding hint if the automatic encoding detection fails.
  * <p>
  * This parser sets the following output metadata entries:
  * <dl>
- * <dt>{@link org.apache.tika.metadata.HttpHeaders#CONTENT_TYPE}</dt>
- * <dd><code>text/plain</code></dd>
- * <dt>{@link org.apache.tika.metadata.HttpHeaders#CONTENT_ENCODING}</dt>
- * <dd>The detected text encoding of the document.</dd>
- * <dt>
- * {@link org.apache.tika.metadata.HttpHeaders#CONTENT_LANGUAGE} and
- * {@link org.apache.tika.metadata.DublinCore#LANGUAGE}</dt>
+ *   <dt>{@link org.apache.tika.metadata.HttpHeaders#CONTENT_TYPE}</dt>
+ *   <dd><code>text/plain</code></dd>
+ *   <dt>{@link org.apache.tika.metadata.HttpHeaders#CONTENT_ENCODING}</dt>
+ *   <dd>The detected text encoding of the document.</dd>
+ *   <dt>
+ *     {@link org.apache.tika.metadata.HttpHeaders#CONTENT_LANGUAGE} and
+ *     {@link org.apache.tika.metadata.DublinCore#LANGUAGE}
+ *   </dt>
+
  * </dl>
  */
 @SuppressWarnings("serial")
 public class CustomParser implements Parser {
+
 
 	private static final Set<MediaType> SUPPORTED_TYPES = Collections
 			.singleton(MediaType.TEXT_PLAIN);
@@ -225,9 +230,7 @@ public class CustomParser implements Parser {
 		}
 	}
 
-	/**
-	 * @deprecated This method will be removed in Apache Tika 1.0.
-	 */
+
 	public void parse(InputStream stream, ContentHandler handler,
 			Metadata metadata) throws IOException, SAXException, TikaException {
 		parse(stream, handler, metadata, new ParseContext());

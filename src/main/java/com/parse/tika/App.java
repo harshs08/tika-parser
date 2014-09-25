@@ -20,6 +20,7 @@ public class App {
 		Metadata metadata = new Metadata();
 		ToHTMLContentHandler h = new ToHTMLContentHandler();
 		// InputStream content = App.class
+
 		// .getResourceAsStream("/computrabajo-ar-20121106.tsv");
 		// parser.parse(content, h, metadata, new ParseContext());
 
@@ -33,6 +34,7 @@ public class App {
 
 		String fileName = "C:\\USCFall2014\\Information Retreival and Search Engines\\HW\\Output\\run1.html";
 		//int count = 1;
+
 		PrintWriter writer = null;
 		try {
 			writer = new PrintWriter(fileName, "UTF-8");
