@@ -20,20 +20,19 @@ public class App {
 		Metadata metadata = new Metadata();
 		ToHTMLContentHandler h = new ToHTMLContentHandler();
 		// InputStream content = App.class
-
 		// .getResourceAsStream("/computrabajo-ar-20121106.tsv");
 		// parser.parse(content, h, metadata, new ParseContext());
-
 		// System.out.println(h.toString());
+		
 		File f = new File(
-				"C:\\USCFall2014\\Information Retreival and Search Engines\\HW\\IR_Data\\computrabajo-ar-20121106.tsv");
+				"/Users/harshsingh/Documents/Codes/IR/tika-parser/src/main/resources/computrabajo-ar-20121106.tsv");
 
 		parser.parse(new FileInputStream(f), h, metadata, new ParseContext());
 
 		// System.out.println(h.toString());
 
-		String fileName = "C:\\USCFall2014\\Information Retreival and Search Engines\\HW\\Output\\run1.html";
-		//int count = 1;
+		String fileName = "/Users/harshsingh/Desktop/run2.xhtml";
+		// int count = 1;
 
 		PrintWriter writer = null;
 		try {
