@@ -28,7 +28,7 @@ public class App {
 
 		parser.parse(new FileInputStream(f), h, metadata, new ParseContext());
 
-		//System.out.println(h.toString());
+		System.out.println(h.toString());
 
 		String fileName = "/Users/harshsingh/Desktop/run2.html";
 		
