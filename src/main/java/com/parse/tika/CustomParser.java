@@ -33,8 +33,6 @@ public class CustomParser implements Parser {
 		return SUPPORTED_TYPES;
 	}
 
-	public String header = "postedDate	location	department	title	salary	start	duration	jobtype	applications	company	contactPerson	phoneNumber	faxNumber:	location	latitude	longitude	firstSeenDate	url	lastSeenDate";
-
 	@Override
 	public void parse(InputStream stream, ContentHandler handler,
 			Metadata metadata, ParseContext context) throws IOException,
@@ -78,10 +76,10 @@ public class CustomParser implements Parser {
 
 		// metadata.CONVENTIONS.;
 		metadata.set(Metadata.CONTENT_TYPE, "text/plain");
+		BufferedReader reader = null;
 
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					stream, encoding));
+			reader = new BufferedReader(new InputStreamReader(stream, encoding));
 
 			// TIKA-240: Drop the BOM when extracting plain text
 			reader.mark(1);
@@ -89,52 +87,148 @@ public class CustomParser implements Parser {
 			if (bom != '\ufeff') { // zero-width no-break space
 				reader.reset();
 			}
-			
-			
+
 			Map<String, String> map = new HashMap<String, String>();
-			String thisLine = "";
-			
-			int count = 0;
-					
-			
-			XHTMLContentHandler xhtml = new XHTMLContentHandler(handler,
+
+			// int count = 0;
+
+			XHTMLContentHandler html = new XHTMLContentHandler(handler,
 					metadata);
+			TSVToXHTML xhtml = new TSVToXHTML(html, metadata);
 
 			xhtml.startDocument();
-
 			xhtml.startElement("table");
-			processLine(xhtml, header);
+			//getLineFromTSV(map, FieldConstants.HEADER);
+			//setLineToXML(xhtml, map);
+
 			for (String line = reader.readLine(); line != null; line = reader
 					.readLine()) {
-				xhtml.startElement("tr");
-				processLine(xhtml, line);
-				xhtml.endElement("tr");
+				getLineFromTSV(map, line);
+				
+				setLineToXML(xhtml, map);
+				
+
 			}
+
 			xhtml.endElement("table");
-
 			xhtml.endDocument();
+			map.clear();
 
-			
-			
 		} catch (UnsupportedEncodingException e) {
 			throw new TikaException("Unsupported text encoding: " + encoding, e);
+		} finally {
+			reader.close();
 		}
 	}
 
-	private void processLine(XHTMLContentHandler xhtml, final String line) {
-		String[] params = line.split("\\t+");
-		char[] buffer = null;
+	private void getLineFromTSV(final Map<String, String> map, final String line) {
+		String[] params = line.split("\t");
 
 		try {
-			for (int i = 0; i < params.length; i++) {
-				buffer = params[i].toCharArray();
-				xhtml.startElement("th");
-				xhtml.characters(buffer, 0, buffer.length);
-				xhtml.endElement("th");
-			}
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
+				map.put(FieldConstants.POSTED_DATE, params[0]);
+				
+				map.put(FieldConstants.LOCATION1, params[1]);
+				
+				map.put(FieldConstants.DEPARTMENT, params[2]);
+				
+				map.put(FieldConstants.TITLE, params[3]);
+				
+				map.put(FieldConstants.SALARY, params[5]);
+				
+				map.put(FieldConstants.START_DATE, params[6]);
+				
+				map.put(FieldConstants.DURATION, params[7]);
+				
+				map.put(FieldConstants.JOB_TYPE, params[8]);
+				
+				map.put(FieldConstants.APPLICATIONS, params[9]);
+				
+				map.put(FieldConstants.COMPANY, params[10]);
+				
+				map.put(FieldConstants.CONTACT_PERSON, params[11]);
+				
+				map.put(FieldConstants.PHONE_NUMBER, params[12]);
+				
+				map.put(FieldConstants.FAX_NUMBER, params[13]);
+				
+				map.put(FieldConstants.LOCATION2, params[14]);
+				
+				map.put(FieldConstants.LATITUDE, params[15]);
+				
+				map.put(FieldConstants.LONGITUDE, params[16]);
+				
+				map.put(FieldConstants.FIRST_SEEN_DATE, params[17]);
+				
+				map.put(FieldConstants.URL, params[18]);
+				
+				map.put(FieldConstants.LAST_SEEN_DATE, params[19]);
+
+
+		} catch (ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void setLineToXML(TSVToXHTML xhtml, Map<String, String> map) throws SAXException {
+		xhtml.startElement("tr");
+		xhtml.rowInsert(FieldConstants.POSTED_DATE,
+				map.get(FieldConstants.POSTED_DATE));
+		
+		xhtml.rowInsert(FieldConstants.LOCATION1,
+				map.get(FieldConstants.LOCATION1));
+		
+		xhtml.rowInsert(FieldConstants.DEPARTMENT,
+				map.get(FieldConstants.DEPARTMENT));
+		
+		xhtml.rowInsert(FieldConstants.TITLE,
+				map.get(FieldConstants.TITLE));
+		
+		xhtml.rowInsert(FieldConstants.SALARY,
+				map.get(FieldConstants.SALARY));
+		
+		xhtml.rowInsert(FieldConstants.START_DATE,
+				map.get(FieldConstants.START_DATE));
+		
+		xhtml.rowInsert(FieldConstants.DURATION,
+				map.get(FieldConstants.DURATION));
+		
+		xhtml.rowInsert(FieldConstants.JOB_TYPE,
+				map.get(FieldConstants.JOB_TYPE));
+		
+		xhtml.rowInsert(FieldConstants.APPLICATIONS,
+				map.get(FieldConstants.APPLICATIONS));
+		
+		xhtml.rowInsert(FieldConstants.COMPANY,
+				map.get(FieldConstants.COMPANY));
+		
+		xhtml.rowInsert(FieldConstants.CONTACT_PERSON,
+				map.get(FieldConstants.CONTACT_PERSON));
+		
+		xhtml.rowInsert(FieldConstants.PHONE_NUMBER,
+				map.get(FieldConstants.PHONE_NUMBER));
+		
+		xhtml.rowInsert(FieldConstants.FAX_NUMBER,
+				map.get(FieldConstants.FAX_NUMBER));
+		
+		xhtml.rowInsert(FieldConstants.LOCATION2,
+				map.get(FieldConstants.LOCATION2));
+		
+		xhtml.rowInsert(FieldConstants.LATITUDE,
+				map.get(FieldConstants.LATITUDE));
+		
+		xhtml.rowInsert(FieldConstants.LONGITUDE,
+				map.get(FieldConstants.LONGITUDE));
+		
+		xhtml.rowInsert(FieldConstants.FIRST_SEEN_DATE,
+				map.get(FieldConstants.FIRST_SEEN_DATE));
+		
+		xhtml.rowInsert(FieldConstants.URL,
+				map.get(FieldConstants.URL));
+		
+		xhtml.rowInsert(FieldConstants.LAST_SEEN_DATE,
+				map.get(FieldConstants.LAST_SEEN_DATE));
+		
+		xhtml.endElement("tr");
+		
 	}
 }

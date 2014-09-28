@@ -2,6 +2,7 @@ package com.parse.tika;
 
 public final class FieldConstants {
 
+	public static final String HEADER = "postedDate\tlocation\tdepartment\ttitle\tsalary\tstart\tduration\tjobType\tapplications\tcompany\tcontactPerson\tphoneNumber\tfaxNumber\tlocation\tlatitude\tlongitude\tfirstSeenDate\turl\tlastSeenDate";
 	public static final String POSTED_DATE = "postedDate";
 	public static final String LOCATION1 = "location1";
 	public static final String DEPARTMENT = "department";
@@ -21,10 +22,10 @@ public final class FieldConstants {
 	public static final String FIRST_SEEN_DATE = "firstSeenDate";
 	public static final String URL = "url";
 	public static final String LAST_SEEN_DATE = "lastSeenDate";
-	
-	//public static final DateParser DATE_PARSER = new DateParser();
-	
-	private FieldConstants(){
+
+	// public static final DateParser DATE_PARSER = new DateParser();
+
+	private FieldConstants() {
 		return;
 	}
 }

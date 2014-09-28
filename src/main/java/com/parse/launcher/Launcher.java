@@ -1,5 +1,6 @@
 package com.parse.launcher;
 
+import com.parse.tika.FieldConstants;
 import com.parse.util.DateParser;
 
 public class Launcher {
@@ -14,6 +15,7 @@ public class Launcher {
 		boolean c = dp.isValidDate(date2);
 		
 		System.out.println("Date:"+a+ " Date1:"+b+" Date2:"+c);
+		//System.out.println(FieldConstants.HEADER);
 		
 	}
 
