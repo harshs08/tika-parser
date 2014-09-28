@@ -11,6 +11,12 @@ public class TSVToXHTML extends XHTMLContentHandler {
 		super(handler, metdata);
 	}
 	
+	@Override
+	public void ignorableWhitespace(char[] ch, int start, int length)
+			throws SAXException {
+		 super.ignorableWhitespace(ch, start, length);
+	}
+	
 	public void rowInsert(String id, String text) throws SAXException{
 		if (text != null && text.length() > 0) {
 			startElement("td", "id", id);

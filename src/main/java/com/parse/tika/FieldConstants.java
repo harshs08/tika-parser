@@ -2,7 +2,7 @@ package com.parse.tika;
 
 public final class FieldConstants {
 
-	public static final String HEADER = "postedDate\tlocation\tdepartment\ttitle\tsalary\tstart\tduration\tjobType\tapplications\tcompany\tcontactPerson\tphoneNumber\tfaxNumber\tlocation\tlatitude\tlongitude\tfirstSeenDate\turl\tlastSeenDate";
+	public static final String HEADER = "postedDate\tlocation\tdepartment\ttitle\t\tsalary\tstart\tduration\tjobType\tapplications\tcompany\tcontactPerson\tphoneNumber\tfaxNumber\tlocation\tlatitude\tlongitude\tfirstSeenDate\turl\tlastSeenDate";
 	public static final String POSTED_DATE = "postedDate";
 	public static final String LOCATION1 = "location1";
 	public static final String DEPARTMENT = "department";
@@ -12,7 +12,7 @@ public final class FieldConstants {
 	public static final String DURATION = "duration";
 	public static final String JOB_TYPE = "jobType";
 	public static final String APPLICATIONS = "applications";
-	public static final String COMPANY = "comapny";
+	public static final String COMPANY = "company";
 	public static final String CONTACT_PERSON = "contactPerson";
 	public static final String PHONE_NUMBER = "phoneNumber";
 	public static final String FAX_NUMBER = "faxNumber";

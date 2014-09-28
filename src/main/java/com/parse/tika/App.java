@@ -24,7 +24,7 @@ public class App {
 		// .getResourceAsStream("computrabajo-ar-20121106.tsv");
 
 		File f = new File(
-				"/Users/harshsingh/Documents/Codes/cs572/baron.pagemewhen.com/~chris/employment/subset/computrabajo-ar-20121106.tsv");
+				"/Users/harshsingh/Desktop/computrabajo-ar-20121106.tsv");
 
 		parser.parse(new FileInputStream(f), h, metadata, new ParseContext());
 

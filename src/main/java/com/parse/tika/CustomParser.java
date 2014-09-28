@@ -19,7 +19,10 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.apache.tika.parser.txt.CharsetMatch;
+import org.apache.tika.sax.ToHTMLContentHandler;
 import org.apache.tika.sax.XHTMLContentHandler;
+import org.apache.tika.sax.xpath.Matcher;
+import org.apache.tika.sax.xpath.XPathParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -32,6 +35,7 @@ public class CustomParser implements Parser {
 	public Set<MediaType> getSupportedTypes(ParseContext context) {
 		return SUPPORTED_TYPES;
 	}
+	
 
 	@Override
 	public void parse(InputStream stream, ContentHandler handler,
@@ -46,12 +50,17 @@ public class CustomParser implements Parser {
 		// Detect the content encoding (the stream is reset to the beginning)
 		CharsetDetector detector = new CharsetDetector();
 		String incomingCharset = metadata.get(Metadata.CONTENT_ENCODING);
+		System.out.println("incomingCharset: "+incomingCharset);
 		String incomingType = metadata.get(Metadata.CONTENT_TYPE);
+		System.out.println("incomingType: "+incomingType);
+		
 		if (incomingCharset == null && incomingType != null) {
 			// TIKA-341: Use charset in content-type
 			MediaType mt = MediaType.parse(incomingType);
 			if (mt != null) {
 				incomingCharset = mt.getParameters().get("charset");
+				System.out.println("mt: "+mt.toString());
+				System.out.println("incomingCharset: "+incomingCharset.toString());
 			}
 		}
 
@@ -68,14 +77,15 @@ public class CustomParser implements Parser {
 		}
 
 		String encoding = metadata.get(Metadata.CONTENT_ENCODING);
+		System.out.println("encoding: "+encoding);
 		if (encoding == null) {
 			throw new TikaException(
 					"Text encoding could not be detected and no encoding"
 							+ " hint is available in document metadata");
 		}
 
-		// metadata.CONVENTIONS.;
-		metadata.set(Metadata.CONTENT_TYPE, "text/plain");
+//		// metadata.CONVENTIONS.;
+		metadata.set(Metadata.CONTENT_TYPE, "text/tab-separated-values");
 		BufferedReader reader = null;
 
 		try {
@@ -92,14 +102,14 @@ public class CustomParser implements Parser {
 
 			// int count = 0;
 
-			XHTMLContentHandler html = new XHTMLContentHandler(handler,
-					metadata);
-			TSVToXHTML xhtml = new TSVToXHTML(html, metadata);
+			//XHTMLContentHandler html = new XHTMLContentHandler(handler,metadata);
+
+			TSVToXHTML xhtml = new TSVToXHTML(handler, metadata);
 
 			xhtml.startDocument();
 			xhtml.startElement("table");
-			//getLineFromTSV(map, FieldConstants.HEADER);
-			//setLineToXML(xhtml, map);
+			getLineFromTSV(map, FieldConstants.HEADER);
+			setLineToXML(xhtml, map);
 
 			for (String line = reader.readLine(); line != null; line = reader
 					.readLine()) {
