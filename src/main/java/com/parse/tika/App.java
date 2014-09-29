@@ -24,11 +24,11 @@ public class App {
 		// .getResourceAsStream("computrabajo-ar-20121106.tsv");
 
 		File f = new File(
-				"/Users/harshsingh/Desktop/computrabajo-ar-20121106.tsv");
+				"/Users/harshsingh/Documents/Codes/cs572/baron.pagemewhen.com/~chris/employment/subset/computrabajo-ar-20121106.tsv");
 
 		parser.parse(new FileInputStream(f), h, metadata, new ParseContext());
 
-		System.out.println(h.toString());
+		//System.out.println(h.toString());
 
 		String fileName = "/Users/harshsingh/Desktop/run2.html";
 		
@@ -42,6 +42,7 @@ public class App {
 
 		catch (Exception e) {
 			// TODO: handle exception
+			e.printStackTrace();
 		}
 
 	}

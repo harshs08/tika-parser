@@ -19,10 +19,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.apache.tika.parser.txt.CharsetMatch;
-import org.apache.tika.sax.ToHTMLContentHandler;
-import org.apache.tika.sax.XHTMLContentHandler;
-import org.apache.tika.sax.xpath.Matcher;
-import org.apache.tika.sax.xpath.XPathParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -47,20 +43,18 @@ public class CustomParser implements Parser {
 			stream = new BufferedInputStream(stream);
 		}
 
-		// Detect the content encoding (the stream is reset to the beginning)
+		// Detect the CONTENT_ENCODING (the stream is reset to the beginning)
 		CharsetDetector detector = new CharsetDetector();
 		String incomingCharset = metadata.get(Metadata.CONTENT_ENCODING);
-		System.out.println("incomingCharset: "+incomingCharset);
-		String incomingType = metadata.get(Metadata.CONTENT_TYPE);
-		System.out.println("incomingType: "+incomingType);
 		
+		// Detect the CONTENT_TYPE from incoming stream metadata
+		String incomingType = metadata.get(Metadata.CONTENT_TYPE);
+		
+		//Check for incomingCharset and incomingType
 		if (incomingCharset == null && incomingType != null) {
-			// TIKA-341: Use charset in content-type
 			MediaType mt = MediaType.parse(incomingType);
 			if (mt != null) {
 				incomingCharset = mt.getParameters().get("charset");
-				System.out.println("mt: "+mt.toString());
-				System.out.println("incomingCharset: "+incomingCharset.toString());
 			}
 		}
 
@@ -68,6 +62,7 @@ public class CustomParser implements Parser {
 			detector.setDeclaredEncoding(incomingCharset);
 		}
 
+		//Set the CONTENT_ENCODING in metadata object
 		detector.setText(stream);
 		for (CharsetMatch match : detector.detectAll()) {
 			if (Charset.isSupported(match.getName())) {
@@ -75,17 +70,17 @@ public class CustomParser implements Parser {
 				break;
 			}
 		}
-
+		
+		//Detect CONTENT_ENCODING from Metadata object passed
 		String encoding = metadata.get(Metadata.CONTENT_ENCODING);
-		System.out.println("encoding: "+encoding);
 		if (encoding == null) {
 			throw new TikaException(
 					"Text encoding could not be detected and no encoding"
 							+ " hint is available in document metadata");
 		}
 
-//		// metadata.CONVENTIONS.;
-		metadata.set(Metadata.CONTENT_TYPE, "text/tab-separated-values");
+		//Set the CONTENT_TYPE for output handler object
+		metadata.set(Metadata.CONTENT_TYPE, "application/xhtml+xml");
 		BufferedReader reader = null;
 
 		try {
@@ -108,21 +103,22 @@ public class CustomParser implements Parser {
 
 			xhtml.startDocument();
 			xhtml.startElement("table");
+			
+			//get and set of header content
 			getLineFromTSV(map, FieldConstants.HEADER);
 			setLineToXML(xhtml, map);
 
+			//get and set of lines content
 			for (String line = reader.readLine(); line != null; line = reader
 					.readLine()) {
 				getLineFromTSV(map, line);
 				
 				setLineToXML(xhtml, map);
-				
-
 			}
 
 			xhtml.endElement("table");
 			xhtml.endDocument();
-			map.clear();
+			map.clear(); //clear the map after the read and write
 
 		} catch (UnsupportedEncodingException e) {
 			throw new TikaException("Unsupported text encoding: " + encoding, e);
