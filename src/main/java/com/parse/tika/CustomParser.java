@@ -5,13 +5,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 import java.util.ArrayList;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.tika.exception.TikaException;
@@ -21,43 +22,21 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.apache.tika.parser.txt.CharsetMatch;
-import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-/**
- * Plain text parser. The text encoding of the document stream is
- * automatically detected based on the byte patterns found at the
- * beginning of the stream. The input metadata key
- * {@link org.apache.tika.metadata.HttpHeaders#CONTENT_ENCODING} is used
- * as an encoding hint if the automatic encoding detection fails.
- * <p>
- * This parser sets the following output metadata entries:
- * <dl>
- *   <dt>{@link org.apache.tika.metadata.HttpHeaders#CONTENT_TYPE}</dt>
- *   <dd><code>text/plain</code></dd>
- *   <dt>{@link org.apache.tika.metadata.HttpHeaders#CONTENT_ENCODING}</dt>
- *   <dd>The detected text encoding of the document.</dd>
- *   <dt>
- *     {@link org.apache.tika.metadata.HttpHeaders#CONTENT_LANGUAGE} and
- *     {@link org.apache.tika.metadata.DublinCore#LANGUAGE}
- *   </dt>
-
- * </dl>
- */
 @SuppressWarnings("serial")
 public class CustomParser implements Parser {
 
-
 	private static final Set<MediaType> SUPPORTED_TYPES = Collections
-			.singleton(MediaType.TEXT_PLAIN);
+			.singleton(MediaType.text("tab-separated-values"));
 
 	public Set<MediaType> getSupportedTypes(ParseContext context) {
 		return SUPPORTED_TYPES;
 	}
+	
 
-	public String header = "postedDate	location	department	title	salary	start	duration	jobtype	applications	company	contactPerson	phoneNumber	faxNumber:	location	latitude	longitude	firstSeenDate	url	lastSeenDate";
-
+	@Override
 	public void parse(InputStream stream, ContentHandler handler,
 			Metadata metadata, ParseContext context) throws IOException,
 			SAXException, TikaException {
@@ -67,12 +46,15 @@ public class CustomParser implements Parser {
 			stream = new BufferedInputStream(stream);
 		}
 
-		// Detect the content encoding (the stream is reset to the beginning)
+		// Detect the CONTENT_ENCODING (the stream is reset to the beginning)
 		CharsetDetector detector = new CharsetDetector();
 		String incomingCharset = metadata.get(Metadata.CONTENT_ENCODING);
+		
+		// Detect the CONTENT_TYPE from incoming stream metadata
 		String incomingType = metadata.get(Metadata.CONTENT_TYPE);
+		
+		//Check for incomingCharset and incomingType
 		if (incomingCharset == null && incomingType != null) {
-			// TIKA-341: Use charset in content-type
 			MediaType mt = MediaType.parse(incomingType);
 			if (mt != null) {
 				incomingCharset = mt.getParameters().get("charset");
@@ -83,6 +65,7 @@ public class CustomParser implements Parser {
 			detector.setDeclaredEncoding(incomingCharset);
 		}
 
+		//Set the CONTENT_ENCODING in metadata object
 		detector.setText(stream);
 		for (CharsetMatch match : detector.detectAll()) {
 			if (Charset.isSupported(match.getName())) {
@@ -90,7 +73,8 @@ public class CustomParser implements Parser {
 				break;
 			}
 		}
-
+		
+		//Detect CONTENT_ENCODING from Metadata object passed
 		String encoding = metadata.get(Metadata.CONTENT_ENCODING);
 		if (encoding == null) {
 			throw new TikaException(
@@ -98,13 +82,12 @@ public class CustomParser implements Parser {
 							+ " hint is available in document metadata");
 		}
 
-		// TIKA-341: Only stomp on content-type after we're done trying to
-		// use it to guess at the charset.
-		metadata.set(Metadata.CONTENT_TYPE, "text/plain");
+		//Set the CONTENT_TYPE for output handler object
+		metadata.set(Metadata.CONTENT_TYPE, "application/xhtml+xml");
+		BufferedReader reader = null;
 
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					stream, encoding));
+			reader = new BufferedReader(new InputStreamReader(stream, encoding));
 
 			// TIKA-240: Drop the BOM when extracting plain text
 			reader.mark(1);
@@ -113,127 +96,148 @@ public class CustomParser implements Parser {
 				reader.reset();
 			}
 
-			XHTMLContentHandler xhtml = new XHTMLContentHandler(handler,
-					metadata);
+			Map<String, String> map = new HashMap<String, String>();
+
+			// int count = 0;
+
+			//XHTMLContentHandler html = new XHTMLContentHandler(handler,metadata);
+
+			TSVToXHTML xhtml = new TSVToXHTML(handler, metadata);
+
 			xhtml.startDocument();
 			xhtml.startElement("table");
-			int count = 0;
-			processLine(xhtml, header, "" + count++);
+			
+			//get and set of header content
+			getLineFromTSV(map, FieldConstants.HEADER);
+			setLineToXML(xhtml, map);
+
+			//get and set of lines content
 			for (String line = reader.readLine(); line != null; line = reader
 					.readLine()) {
-				xhtml.startElement("tr");
-				processLine(xhtml, line, "" + count++);
-				xhtml.endElement("tr");
+				getLineFromTSV(map, line);
+				
+				setLineToXML(xhtml, map);
 			}
-			xhtml.endElement("table");
 
+			xhtml.endElement("table");
 			xhtml.endDocument();
+			map.clear(); //clear the map after the read and write
+
 		} catch (UnsupportedEncodingException e) {
 			throw new TikaException("Unsupported text encoding: " + encoding, e);
+		} finally {
+			reader.close();
 		}
 	}
 
-	private void processLine(XHTMLContentHandler xhtml, String line,
-	/* parameter for line num */String count) {
-		String[] params = line.split("\\t+");
-		String[] withoutMissingEntriesArray = new String[19];
-		
-		if (params.length < 19) {
-			boolean postedDateMissing = true, phoneNumMissing = true, faxNumMissing = true, latMissing = true, longMissing = true, firstSeenDateMissing = true, urlMissing = true, lastSeenDateMissing = true;
-			boolean textOnly = true;
-			int counter = 0;
-			ArrayList<String> withoutMissingEntries = new ArrayList<String>();
-			int i = 0;
-			if (postedDateMissing)
-				withoutMissingEntries.add("N/A");
-			else {
-				withoutMissingEntries.add(params[counter++]);
-				i++;
-			}
+	private void getLineFromTSV(final Map<String, String> map, final String line) {
+		String[] params = line.split("\t");
 
-			for (; i < 11; i++) {
-				if (textOnly)
-					withoutMissingEntries.add(i, params[counter++]);
-				else 
-					break;
-			}
-			for (; i < 11; i++) {
-				withoutMissingEntries.add("N/A");
-			}
-
-			if (phoneNumMissing) 
-				withoutMissingEntries.add("N/A");
-			else
-				withoutMissingEntries.add(i++, params[counter++]);
-			
-			if (faxNumMissing)
-				withoutMissingEntries.add("N/A");
-			else
-				withoutMissingEntries.add(i++, params[counter++]);
-			
-			if (textOnly)
-				withoutMissingEntries.add(i++, params[counter++]);
-			else
-				withoutMissingEntries.add("N/A");
-
-			if (latMissing)
-				withoutMissingEntries.add("N/A");
-			else
-				withoutMissingEntries.add(i++, params[counter++]);
-
-			if (longMissing)
-				withoutMissingEntries.add("N/A");
-			else
-				withoutMissingEntries.add(i++, params[counter++]);
-			
-			if (firstSeenDateMissing)
-				withoutMissingEntries.add("N/A");
-			else
-				withoutMissingEntries.add(i++, params[counter++]);
-
-			if (urlMissing)
-				withoutMissingEntries.add("N/A");
-			else
-				withoutMissingEntries.add(i++, params[counter++]);
-			
-			if (lastSeenDateMissing)
-				withoutMissingEntries.add("N/A");
-			else
-				withoutMissingEntries.add(i++, params[counter++]);
-			
-			
-			withoutMissingEntries.toArray(withoutMissingEntriesArray);
-		}
-		else
-			withoutMissingEntriesArray = params;
-		
-		char[] buffer = null;
-		/* line numbers start */
-		buffer = count.toCharArray();
 		try {
-			xhtml.startElement("td");
-			xhtml.characters(buffer, 0, buffer.length);
-			xhtml.endElement("td");
-		} catch (Exception e) {
+				map.put(FieldConstants.POSTED_DATE, params[0]);
+				
+				map.put(FieldConstants.LOCATION1, params[1]);
+				
+				map.put(FieldConstants.DEPARTMENT, params[2]);
+				
+				map.put(FieldConstants.TITLE, params[3]);
+				
+				map.put(FieldConstants.SALARY, params[5]);
+				
+				map.put(FieldConstants.START_DATE, params[6]);
+				
+				map.put(FieldConstants.DURATION, params[7]);
+				
+				map.put(FieldConstants.JOB_TYPE, params[8]);
+				
+				map.put(FieldConstants.APPLICATIONS, params[9]);
+				
+				map.put(FieldConstants.COMPANY, params[10]);
+				
+				map.put(FieldConstants.CONTACT_PERSON, params[11]);
+				
+				map.put(FieldConstants.PHONE_NUMBER, params[12]);
+				
+				map.put(FieldConstants.FAX_NUMBER, params[13]);
+				
+				map.put(FieldConstants.LOCATION2, params[14]);
+				
+				map.put(FieldConstants.LATITUDE, params[15]);
+				
+				map.put(FieldConstants.LONGITUDE, params[16]);
+				
+				map.put(FieldConstants.FIRST_SEEN_DATE, params[17]);
+				
+				map.put(FieldConstants.URL, params[18]);
+				
+				map.put(FieldConstants.LAST_SEEN_DATE, params[19]);
 
-		}/* line numbers end */
-		try {
-			for (int i = 0; i < 19; i++) {
-				buffer = withoutMissingEntriesArray[i].toCharArray();
-				xhtml.startElement("td");
-				xhtml.characters(buffer, 0, buffer.length);
-				xhtml.endElement("td");
-			}
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
+
+		} catch (ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
 		}
 	}
 
-
-	public void parse(InputStream stream, ContentHandler handler,
-			Metadata metadata) throws IOException, SAXException, TikaException {
-		parse(stream, handler, metadata, new ParseContext());
+	private void setLineToXML(TSVToXHTML xhtml, Map<String, String> map) throws SAXException {
+		xhtml.startElement("tr");
+		xhtml.rowInsert(FieldConstants.POSTED_DATE,
+				map.get(FieldConstants.POSTED_DATE));
+		
+		xhtml.rowInsert(FieldConstants.LOCATION1,
+				map.get(FieldConstants.LOCATION1));
+		
+		xhtml.rowInsert(FieldConstants.DEPARTMENT,
+				map.get(FieldConstants.DEPARTMENT));
+		
+		xhtml.rowInsert(FieldConstants.TITLE,
+				map.get(FieldConstants.TITLE));
+		
+		xhtml.rowInsert(FieldConstants.SALARY,
+				map.get(FieldConstants.SALARY));
+		
+		xhtml.rowInsert(FieldConstants.START_DATE,
+				map.get(FieldConstants.START_DATE));
+		
+		xhtml.rowInsert(FieldConstants.DURATION,
+				map.get(FieldConstants.DURATION));
+		
+		xhtml.rowInsert(FieldConstants.JOB_TYPE,
+				map.get(FieldConstants.JOB_TYPE));
+		
+		xhtml.rowInsert(FieldConstants.APPLICATIONS,
+				map.get(FieldConstants.APPLICATIONS));
+		
+		xhtml.rowInsert(FieldConstants.COMPANY,
+				map.get(FieldConstants.COMPANY));
+		
+		xhtml.rowInsert(FieldConstants.CONTACT_PERSON,
+				map.get(FieldConstants.CONTACT_PERSON));
+		
+		xhtml.rowInsert(FieldConstants.PHONE_NUMBER,
+				map.get(FieldConstants.PHONE_NUMBER));
+		
+		xhtml.rowInsert(FieldConstants.FAX_NUMBER,
+				map.get(FieldConstants.FAX_NUMBER));
+		
+		xhtml.rowInsert(FieldConstants.LOCATION2,
+				map.get(FieldConstants.LOCATION2));
+		
+		xhtml.rowInsert(FieldConstants.LATITUDE,
+				map.get(FieldConstants.LATITUDE));
+		
+		xhtml.rowInsert(FieldConstants.LONGITUDE,
+				map.get(FieldConstants.LONGITUDE));
+		
+		xhtml.rowInsert(FieldConstants.FIRST_SEEN_DATE,
+				map.get(FieldConstants.FIRST_SEEN_DATE));
+		
+		xhtml.rowInsert(FieldConstants.URL,
+				map.get(FieldConstants.URL));
+		
+		xhtml.rowInsert(FieldConstants.LAST_SEEN_DATE,
+				map.get(FieldConstants.LAST_SEEN_DATE));
+		
+		xhtml.endElement("tr");
+		
 	}
-
 }

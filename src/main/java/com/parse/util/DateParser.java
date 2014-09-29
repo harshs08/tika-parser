@@ -7,10 +7,10 @@ import java.util.Date;
 
 public class DateParser {
 
-	private String errorMessage;
+//	private String errorMessage;
 
 	public boolean isValidDate(String date) {
-		errorMessage = "";
+//		errorMessage = "";
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		Date testDate = null;
 
@@ -19,13 +19,13 @@ public class DateParser {
 		}
 
 		catch (ParseException e) {
-			errorMessage = "the date you provided is in an invalid date"
-					+ " format.";
+//			errorMessage = "the date you provided is in an invalid date"
+//					+ " format.";
 			return false;
 		}
 
 		if (!sdf.format(testDate).equals(date)) {
-			errorMessage = "The date that you provided is invalid.";
+//			errorMessage = "The date that you provided is invalid.";
 			return false;
 		}
 
