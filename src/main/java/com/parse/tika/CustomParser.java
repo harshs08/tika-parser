@@ -2,9 +2,12 @@ package com.parse.tika;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -19,11 +22,20 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.apache.tika.parser.txt.CharsetMatch;
+import org.apache.tika.sax.XHTMLContentHandler;
+import org.apache.tika.sax.xpath.Matcher;
+import org.apache.tika.sax.xpath.MatchingContentHandler;
+import org.apache.tika.sax.xpath.XPathParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 @SuppressWarnings("serial")
 public class CustomParser implements Parser {
+	
+	private static final XPathParser xhtmlParser = new XPathParser("xhtml",
+			XHTMLContentHandler.XHTML);
+	private static final Matcher trContentMatcher = xhtmlParser
+			.parse("/xhtml:html/xhtml:body/xhtml:table/xhtml:tr/descendant::node()");
 
 	private static final Set<MediaType> SUPPORTED_TYPES = Collections
 			.singleton(MediaType.text("tab-separated-values"));
@@ -94,30 +106,42 @@ public class CustomParser implements Parser {
 			}
 
 			Map<String, String> map = new HashMap<String, String>();
+			String jsonfilename = "";
 
-			// int count = 0;
+			int count = 0;
 
 			//XHTMLContentHandler html = new XHTMLContentHandler(handler,metadata);
-
-			TSVToXHTML xhtml = new TSVToXHTML(handler, metadata);
-
-			xhtml.startDocument();
-			xhtml.startElement("table");
 			
 			//get and set of header content
-			getLineFromTSV(map, FieldConstants.HEADER);
-			setLineToXML(xhtml, map);
+			//getLineFromTSV(map, FieldConstants.HEADER);
+			//setLineToXML(xhtml, map);
 
 			//get and set of lines content
 			for (String line = reader.readLine(); line != null; line = reader
 					.readLine()) {
+				
+				jsonfilename = new StringBuffer("json_").append(count).append(".json").toString();
+				
+				OutputStream out_stream = new FileOutputStream(new File(jsonfilename));
+				
+				ContentHandler handler_ = new XHTMLToJson(out_stream);
+				
+				ContentHandler mhandler = new MatchingContentHandler(handler_,trContentMatcher);
+				TSVToXHTML xhtml = new TSVToXHTML(mhandler, metadata);
+				xhtml.startDocument();
+				xhtml.startElement("table");
+				
 				getLineFromTSV(map, line);
 				
 				setLineToXML(xhtml, map);
+				count++;
+
+				xhtml.endElement("table");
+				xhtml.endDocument();
 			}
 
-			xhtml.endElement("table");
-			xhtml.endDocument();
+			//xhtml.endElement("table");
+			//xhtml.endDocument();
 			map.clear(); //clear the map after the read and write
 
 		} catch (UnsupportedEncodingException e) {
