@@ -36,6 +36,7 @@ import uuid
 import os
 import datetime
 
+
 _verbose = False
 _guessEncoding = False
 _theMagic = magic.Magic(mime_encoding=True)
@@ -93,6 +94,7 @@ def main(argv=None):
        colHeaderFilePath = None
        jsonFilePath = None
        tsvFilePath = None
+       tsvDirPath =  None
        objectType = None
        uniqueField = None
        encodingFilePath = None
@@ -103,97 +105,120 @@ def main(argv=None):
           elif option in ('-t', '--tsv'):
              tsvFilePath = value
           elif option in ('-j', '--json'):
-            jsonFilePath = value
+             jsonFilePath = value
           elif option in ('-c', '--cols'):
              colHeaderFilePath = value    
           elif option in ('-o', '--object'):
-              objectType = value     
+             objectType = value     
           elif option in ('-u', '--unique'):
-              uniqueField = value   
+             uniqueField = value   
           elif option in ('-v', '--verbose'):
              global _verbose
              _verbose = True
           elif option in ('-e', '--encoding'):
-              encodingFilePath = value
-       print datetime.datetime.now().time()      
-       if not checkFilePath(tsvFilePath) or not checkFilePath(jsonFilePath, False) or not checkFilePath(colHeaderFilePath) or objectType == None:
-           raise _Usage(_helpMessage)      
+             encodingFilePath = value
+       totalCount = 0
+       count = 0
+       tsvDirPath = tsvFilePath
+       dirList=os.listdir(tsvDirPath)
+       print datetime.datetime.now().time()
+       for fname in dirList:
+               tsvFilePath = tsvDirPath+"/"+fname
+               jsonFilePath = tsvDirPath+"/"+fname
+               jsonFilePath = jsonFilePath[:-4]
+               print tsvFilePath
+	       if not os.path.exists(jsonFilePath):
+    				os.makedirs(jsonFilePath)
+               
+               colHeaderFilePath = "/home/tdemirel/Desktop/572/Param.txt" 
+               objectType = "job"          
+	       if not checkFilePath(colHeaderFilePath) or objectType == None:
+		   raise _Usage(_helpMessage)      
 
-       _guessEncoding = encodingFilePath <> None
-       if _guessEncoding:
-           if checkFilePath(encodingFilePath):
-               with open(encodingFilePath) as encodingFile:
-                   encodings = encodingFile.read().splitlines()
-                   verboseLog(encodings)
-           else:
-               raise _Usage("Encoding file doesn't exist")           
-             
-       with open(colHeaderFilePath) as headers:
-           cols = headers.read().splitlines()
-           verboseLog(cols)
-           
-       with open (tsvFilePath) as tsv:
-            if uniqueField <> None:
-                fieldCache = {}
-                
-            for line in csv.reader(tsv, dialect="excel-tab"):
-                jsonStruct={}
-                diff = len(cols)-len(line)
-                if diff > 0:
-                    verboseLog("Column Headers and Row Values Don't Match up: numCols: ["+str(len(cols))+"]: numRowValues: ["+str(len(line))+"]")
-        
-                for num in range(0, min(len(cols), len(line))):
-                    if ":" in cols[num] and diff > 0:
-                        diff = diff - 1
-                        continue                    
+	       _guessEncoding = encodingFilePath <> None
+	       if _guessEncoding:
+		   if checkFilePath(encodingFilePath):
+		       with open(encodingFilePath) as encodingFile:
+		           encodings = encodingFile.read().splitlines()
+		           verboseLog(encodings)
+		   else:
+		       raise _Usage("Encoding file doesn't exist")           
+		     
+	       with open(colHeaderFilePath) as headers:
+		   cols = headers.read().splitlines()
+		   verboseLog(cols)
+               
+	       if checkFilePath(tsvFilePath):
+	           with open (tsvFilePath) as tsv:
+		    if uniqueField <> None:
+		        fieldCache = {}
+		    count=0
                     
-                    if line[num] <> None and line[num].lstrip() <> '':
-                        if _guessEncoding:
-                            for encoding in encodings:
-                                try:
-                                    val = line[num].decode(encoding).encode("utf-8")
-                                except UnicodeDecodeError:
-                                    if encoding <> encodings[-1]:
-                                        continue
-                                    val = convertToUTF8(line[num])
-                                else:
-                                    break
-                        else:
-                            val = convertToUTF8(line[num])
-                    else:
-                        val = ''
-                    
-                    jsonStruct[cols[num]] = val
-                    if "*" in cols[num]:
-                        jsonStruct["id"] = val    
-                
-                if not "id" in jsonStruct:
-                    # generate an id
-                    id = uuid.uuid4()
-                    jsonStruct["id"] = str(id)
-                            
-                if uniqueField <> None:
-                    if uniqueField in jsonStruct:
-                        if not jsonStruct[uniqueField] in fieldCache:
-                            jsonStructs.append(jsonStruct)
-                            fieldCache[jsonStruct[uniqueField]] = "yes"
-                            jsonStructs.append(jsonStruct)
-                        else:
-                            verboseLog("Skipping adding record: ["+jsonStruct["id"]+"]: duplicate unique field: ["+jsonStruct[uniqueField]+"]")
-                    else:
-                        verboseLog("JSON struct with id: ["+jsonStruct["id"]+"] does not have unique field: ["+uniqueField+"]: adding it anyways.")
-                else:
-                    jsonStructs.append(jsonStruct)
-        
-       jsonWrapper = {objectType : jsonStructs}
-       outFile = open(jsonFilePath, "wb")
-       verboseLog("Writing output file: ["+jsonFilePath+"]")
-       json.dump(jsonWrapper, outFile, encoding="utf-8")
-       print datetime.datetime.now().time()             
+		    for line in csv.reader(tsv, dialect="excel-tab"):
+			count=count+1
+		        jsonStruct={}
+		        diff = len(cols)-len(line)
+		        if diff > 0:
+		            verboseLog("Column Headers and Row Values Don't Match up: numCols: ["+str(len(cols))+"]: numRowValues: ["+str(len(line))+"]")
+		
+		        for num in range(0, min(len(cols), len(line))):
+		            if ":" in cols[num] and diff > 0:
+		                diff = diff - 1
+		                continue                    
+		            
+		            if line[num] <> None and line[num].lstrip() <> '':
+		                if _guessEncoding:
+		                    for encoding in encodings:
+		                        try:
+		                            val = line[num].decode(encoding).encode("utf-8")
+		                        except UnicodeDecodeError:
+		                            if encoding <> encodings[-1]:
+		                                continue
+		                            val = convertToUTF8(line[num])
+		                        else:
+		                            break
+		                else:
+		                    val = convertToUTF8(line[num])
+		            else:
+		                val = ''
+		            
+		            jsonStruct[cols[num]] = val
+		            if "*" in cols[num]:
+		                jsonStruct["id"] = val    
+		        
+		        if not "id" in jsonStruct:
+		            # generate an id
+		            id = uuid.uuid4()
+		            jsonStruct["id"] = str(id)
+		                    
+		        if uniqueField <> None:
+		            if uniqueField in jsonStruct:
+		                if not jsonStruct[uniqueField] in fieldCache:
+		                    jsonStructs.append(jsonStruct)
+		                    fieldCache[jsonStruct[uniqueField]] = "yes"
+		                    jsonStructs.append(jsonStruct)
+		                else:
+		                    verboseLog("Skipping adding record: ["+jsonStruct["id"]+"]: duplicate unique field: ["+jsonStruct[uniqueField]+"]")
+		            else:
+		                verboseLog("JSON struct with id: ["+jsonStruct["id"]+"] does not have unique field: ["+uniqueField+"]: adding it anyways.")
+		        else:
+		            #jsonStructs.append(jsonStruct)
+			    jsonWrapper = {objectType : jsonStruct}
+		            outFile = open(jsonFilePath+"/"+str(count)+".json", "wb")
+		            json.dump(jsonWrapper, outFile, encoding="utf-8")
+		    totalCount = totalCount + count
+		    print totalCount
+		#jsonWrapper = {objectType : jsonStructs}
+		#outFile = open(jsonFilePath, "wb")
+		#verboseLog("Writing output file: ["+jsonFilePath+"]")
+		#json.dump(jsonWrapper, outFile, encoding="utf-8") 
+       #print totalCount 
+       print datetime.datetime.now().time()      
 
    except _Usage, err:
        print >>sys.stderr, sys.argv[0].split('/')[-1] + ': ' + str(err.msg)
        return 2
+
 
 def convertToUTF8(src):
     try:
