@@ -1,0 +1,14 @@
+.classpath
+.project
+.settings
+.pydevproject
+.pyc
+*/*.pyc
+/etllib.egg-info
+/doc.txt
+/build
+/dist
+.*.cfg
+bin
+develop-eggs
+parts
