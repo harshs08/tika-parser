@@ -1,10 +1,9 @@
 package com.parse.tika;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -21,16 +20,13 @@ public class App {
 			SAXException, TikaException {
 		Parser parser = new CustomParser();
 		Metadata metadata = new Metadata();
-		ToHTMLContentHandler h = new ToHTMLContentHandler();
-		// InputStream content = App.class
 
-		// .getResourceAsStream("/computrabajo-ar-20121106.tsv");
-		// parser.parse(content, h, metadata, new ParseContext());
-
-		// System.out.println(h.toString());
-		File f = new File(
-				"/Users/harshsingh/Documents/Codes/cs572/baron.pagemewhen.com/~chris/employment/subset/computrabajo-ar-20121106.tsv");
+		//String fileName = "/Users/harshsingh/Desktop/run2.html";
+		File f = new File("src/main/resources/input/computrabajo-ar-20121106.tsv");
 		
+		System.out.println(f.toString());
+		
+		ToHTMLContentHandler h = new ToHTMLContentHandler();
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
 		Calendar cal = Calendar.getInstance();
 		System.out.println("Parse start time: "+dateFormat.format(cal.getTime()));
@@ -38,12 +34,15 @@ public class App {
 		
 		//System.out.println(h.toString());
 
-		String fileName = "/Users/harshsingh/Desktop/run2.html";
 		
-		PrintWriter writer = null;
+		//PrintWriter writer = null;
 		try {
-			writer = new PrintWriter(fileName, "UTF-8");
-			writer.println(h.toString());
+			//FileWriter fw = new FileWriter(fileName);
+			//writer = new PrintWriter(fileName, "UTF-8");
+			//BufferedWriter bw = new BufferedWriter(fw);
+			//bw.write(h.toString());
+			//bw.close();
+			//writer.println(h.toString());
 			DateFormat dateFormat2 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
 			Calendar cal2 = Calendar.getInstance();
 			System.out.println("Parse end time: "+dateFormat2.format(cal2.getTime()));
