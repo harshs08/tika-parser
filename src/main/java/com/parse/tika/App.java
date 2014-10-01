@@ -3,7 +3,6 @@ package com.parse.tika;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -21,8 +20,10 @@ public class App {
 			SAXException, TikaException {
 		Parser parser = new CustomParser();
 		Metadata metadata = new Metadata();
-		String fileName = "/Users/harshsingh/Desktop/run2.html";
-		File f = new File("/Users/harshsingh/Documents/Codes/IR/tika-parser/src/main/resources/input/computrabajo-ar-20121106.tsv");
+		//String fileName = "/Users/harshsingh/Desktop/run2.html";
+		File f = new File("src/main/resources/input/computrabajo-ar-20121106.tsv");
+		
+		System.out.println(f.toString());
 		
 		ToHTMLContentHandler h = new ToHTMLContentHandler();
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
@@ -30,7 +31,7 @@ public class App {
 		System.out.println("Parse start time: "+dateFormat.format(cal.getTime()));
 		parser.parse(new FileInputStream(f), h, metadata, new ParseContext());
 		
-		System.out.println(h.toString());
+		//System.out.println(h.toString());
 
 		
 		//PrintWriter writer = null;

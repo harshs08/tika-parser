@@ -112,7 +112,7 @@ public class CustomParser implements Parser {
 			//XHTMLContentHandler html = new XHTMLContentHandler(handler,metadata);
 			
 			String jsonFile = "";
-			String outputDir = "/Users/harshsingh/Documents/Codes/IR/tika-parser/src/main/resources/output";
+			String outputDir = "src/main/resources/output";
 			
 			//get and set of header content
 			//getLineFromTSV(map, FieldConstants.HEADER);
