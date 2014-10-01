@@ -18,10 +18,10 @@ public class TSVToXHTML extends XHTMLContentHandler {
 	}
 	
 	public void rowInsert(String id, String text) throws SAXException{
-		//if (text != null && text.length() > 0) {
+		if (text != null && text.length() > 0) {
 			startElement("td", "id", id);
 			characters(text);
 			endElement("td");
-		//}	
+		}
 	}
 }
