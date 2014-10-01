@@ -22,15 +22,15 @@ public class App {
 		Parser parser = new CustomParser();
 		Metadata metadata = new Metadata();
 		String fileName = "/Users/harshsingh/Desktop/run2.html";
-		File f = new File("/tika-parser/src/main/resources/input/computrabajo-ar-20121106.tsv");
+		File f = new File("/Users/harshsingh/Documents/Codes/IR/tika-parser/src/main/resources/input/computrabajo-ar-20121106.tsv");
 		
-		ToHTMLContentHandler h = new ToHTMLContentHandler(new FileOutputStream(fileName), "UTF-8");
+		ToHTMLContentHandler h = new ToHTMLContentHandler();
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
 		Calendar cal = Calendar.getInstance();
 		System.out.println("Parse start time: "+dateFormat.format(cal.getTime()));
 		parser.parse(new FileInputStream(f), h, metadata, new ParseContext());
 		
-		//System.out.println(h.toString());
+		System.out.println(h.toString());
 
 		
 		//PrintWriter writer = null;

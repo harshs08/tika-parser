@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -38,9 +39,9 @@ public class CustomParser implements Parser {
 		return SUPPORTED_TYPES;
 	}
 	
-	private static final XPathParser xpathparser = new XPathParser("xhtml", XHTMLContentHandler.XHTML);
+	public static final XPathParser xpathparser = new XPathParser("xhtml", XHTMLContentHandler.XHTML);
 	
-	private static final Matcher rowMatcher = xpathparser.parse("/xhtml:html/xhtml:body/xhtml:tr/descendant::node()");
+	private static final Matcher rowMatcher = xpathparser.parse("/xhtml:html/xhtml:body/xhtml:table/xhtml:tr/descendant::node()");
 	
 	
 
@@ -111,7 +112,7 @@ public class CustomParser implements Parser {
 			//XHTMLContentHandler html = new XHTMLContentHandler(handler,metadata);
 			
 			String jsonFile = "";
-			String outputDir = "/tika-parser/src/main/resources/output";
+			String outputDir = "/Users/harshsingh/Documents/Codes/IR/tika-parser/src/main/resources/output";
 			
 			//get and set of header content
 			//getLineFromTSV(map, FieldConstants.HEADER);
@@ -124,18 +125,18 @@ public class CustomParser implements Parser {
 				//creating unique json file names
 				jsonFile = new StringBuffer("job_").append(count).append(".json").toString(); 
 				
-				//creating the new files from the output stream emmitted
-				File file = new File(jsonFile,outputDir);
-				FileOutputStream fileOutput = new FileOutputStream(file);
+				//creating the new files from the output stream emitted
+				File file = new File(outputDir,jsonFile);
+				OutputStream fileOutput = new FileOutputStream(file);
 				
 				ContentHandler toJsonContentHandler = new ToJsonContentHandler(fileOutput);
 				
 				ContentHandler matcher = new MatchingContentHandler(toJsonContentHandler,rowMatcher);
-				
+
 				TSVToXHTML xhtml = new TSVToXHTML(matcher, metadata);
 				xhtml.startDocument();
+				xhtml.startDocument();
 				xhtml.startElement("table");
-				
 				getLineFromTSV(map, line);
 				
 				setLineToXML(xhtml, map);
