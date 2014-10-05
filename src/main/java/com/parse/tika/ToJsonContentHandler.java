@@ -15,7 +15,7 @@ public class ToJsonContentHandler extends ToTextContentHandler {
 	@Override
 	public void startDocument() throws SAXException {
 		write("{");
-		write("\"data\"");
+		write("\"job\"");
 		write(":{");
 	}
 	
@@ -41,9 +41,20 @@ public class ToJsonContentHandler extends ToTextContentHandler {
 	@Override
 	public void characters(char[] ch, int start, int length)
 			throws SAXException {
-		write("\"");
-		super.characters(ch, start, length);
-		write("\"");
+		boolean flag = false;
+		String s = "";
+		for(char c : ch)
+		{
+			s +=c;
+			if(!s.equals("\t"))
+				flag = true;
+		}
+		if(flag)
+		{
+			write("\"");
+			super.characters(ch, start, length);
+			write("\"");
+		}
 	}
 
 	@Override
