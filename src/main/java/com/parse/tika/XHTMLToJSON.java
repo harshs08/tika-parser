@@ -1,14 +1,7 @@
 package com.parse.tika;
 
-import java.io.OutputStream;
-
-import javax.xml.stream.events.StartElement;
-
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.sax.BodyContentHandler;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.apache.tika.sax.xpath.Matcher;
-import org.apache.tika.sax.xpath.XPathParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
