@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,11 +29,17 @@ import org.apache.tika.sax.xpath.XPathParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import com.parse.deduplication.Deduplication;
+
 @SuppressWarnings("serial")
 public class CustomParser implements Parser {
 
 	private static final Set<MediaType> SUPPORTED_TYPES = Collections
 			.singleton(MediaType.text("tab-separated-values"));
+	
+	private long count = 0;
+	
+	private Deduplication dedup;
 
 	public Set<MediaType> getSupportedTypes(ParseContext context) {
 		return SUPPORTED_TYPES;
@@ -44,7 +49,13 @@ public class CustomParser implements Parser {
 	
 	private static final Matcher rowMatcher = xpathparser.parse("/xhtml:html/xhtml:body/xhtml:table/xhtml:tr/descendant::node()");
 	
-	
+	public long  parseWithCount(InputStream stream, ContentHandler handler,
+			Metadata metadata, ParseContext context , Deduplication dedup) throws IOException,
+			SAXException, TikaException{
+		this.dedup = dedup;
+		parse(stream, handler, metadata, context);
+		return count;
+	}
 
 	@Override
 	public void parse(InputStream stream, ContentHandler handler,
@@ -108,7 +119,7 @@ public class CustomParser implements Parser {
 
 			Map<String, String> map = new HashMap<String, String>();
 
-			int count = 0;
+			count = 0;
 
 			//XHTMLContentHandler html = new XHTMLContentHandler(handler,metadata);
 			
@@ -120,6 +131,7 @@ public class CustomParser implements Parser {
 			//setLineToXML(xhtml, map);
 
 			//get and set of lines content
+			OutputStream fileOutput;
 			for (String line = reader.readLine(); line != null; line = reader
 					.readLine()) {
 				
@@ -128,7 +140,7 @@ public class CustomParser implements Parser {
 				
 				//creating the new files from the output stream emitted
 				File file = new File(outputDir,jsonFile);
-				OutputStream fileOutput = new FileOutputStream(file);
+				fileOutput = new FileOutputStream(file);
 				
 				ContentHandler toJsonContentHandler = new ToJsonContentHandler(fileOutput);
 				
@@ -144,8 +156,13 @@ public class CustomParser implements Parser {
 				xhtml.endElement("table");
 				xhtml.endDocument();
 				count++;
+				dedup.calculateOriginalDocs(file,map.get(FieldConstants.URL));
+				map.clear();
+				file.delete();
+				fileOutput.close();
+				
 			}
-			map.clear(); //clear the map after the read and write
+			map.clear();//clear the map after the read and write
 
 		} catch (UnsupportedEncodingException e) {
 			throw new TikaException("Unsupported text encoding: " + encoding, e);
