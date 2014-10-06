@@ -22,9 +22,14 @@ Mac OS X/ Linux
 
 1. Unzip the project
 2. Move to the project folder.
-	 Eg (In Lniux Environment): cd /path/to/folder/tika-parser
+	 Eg (In Linux Environment): cd /path/to/folder/tika-parser
 3. Add the jar files fastutil-6.3.jar, guava-13.0-rc1.jar, tika-app-1.6.jar in the /tika-parser/res directory
 4. Compile using the command:
+	
+		javac -cp $CLASSPATH$ src/main/java/com/parse/deduplication/*.java src/main/java/com/parse/tika/*.java
+
+	
+	Eg:
 	
 		javac -cp "./res/*" src/main/java/com/parse/deduplication/*.java src/main/java/com/parse/tika/*.java
 
@@ -33,7 +38,7 @@ Mac OS X/ Linux
 
 1. Run the java file with following command.
 
-		java -cp "./src/main/java/:./res/*" com.parse.tika.App [input folder] [deduplication switch]
+		java -cp $CLASSPATH$ com.parse.tika.App [input folder] [deduplication switch]
 
 	*	[input folder] - String: Path to the folder containing all the TSV files
 	*	[deduplication switch] - int: Selector to chose whether to execute the crawler with or without Deduplication.
