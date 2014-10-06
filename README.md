@@ -15,7 +15,7 @@ Java for tasks 1, 2, 3, 5
 Python for task 4
 
 # Operating System used:
-Windows 8/ Mac OS X
+Mac OS X/ Linux 
 
 ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -40,7 +40,9 @@ Windows 8/ Mac OS X
 	*	[input folder] - String: Path to the folder containing all the TSV files
 	*	[deduplication switch] - int: Selector to chose whether to execute the crawler with or without Deduplication.
 	0 => Without, 1 => With 2=> Near Duplicates(partially implemented).
-Eg:
+
+	Eg.
+		
 		java -cp "./src/main/java/:./res/*" com.parse.tika.App ./src/main/resources/input 1
 
 ----------------------------------------------------------------------------------------------------------------------------------
