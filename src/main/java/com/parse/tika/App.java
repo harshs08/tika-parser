@@ -23,19 +23,20 @@ public class App {
 
 	public static void main(final String[] args) throws IOException,
 			SAXException, TikaException {
-		// base folder
-		final File folder = new File(args[0]);
-		fileNames = listFilesForFolder(folder);
-
-		// deduplication: 0 - without; 1 - with
-		int task = Integer.parseInt(args[1]);
-
-		Deduplication dedup = new Deduplication();
-
-		long totalCount = 0;
-		StringBuffer output = new StringBuffer();
-
 		if (args.length > 1) {
+			// base folder
+			final File folder = new File(args[0]);
+			fileNames = listFilesForFolder(folder);
+
+			// deduplication: 0 - without; 1 - with
+			int task = Integer.parseInt(args[1]);
+
+			Deduplication dedup = new Deduplication();
+
+			long totalCount = 0;
+			int withDedup = 0;
+			StringBuffer output = new StringBuffer();
+
 			DateFormat dateFormat = new SimpleDateFormat(
 					"yyyy/MM/dd HH:mm:ss.SSS");
 			Calendar cal = Calendar.getInstance();
@@ -43,49 +44,68 @@ public class App {
 					+ dateFormat.format(cal.getTime()));
 			switch (task) {
 			case 0:
-				// without deduplication
-				for (int i = 0; i < fileNames.size(); i++) {
-					try {
+				withDedup = 0;
+				break;
 
-						CustomParser parser = new CustomParser();
-						Metadata metadata = new Metadata();
-						File f = new File(args[0] + "/" + fileNames.get(i));
+			case 1:
+				withDedup = 1;
+				break;
+				
+			case 2:
+				withDedup = 2;
+				break;
 
-						ToHTMLContentHandler h = new ToHTMLContentHandler();
-						long count = parser.parseWithCount(new FileInputStream(
-								f), h, metadata, new ParseContext(), dedup);
-						totalCount = totalCount + count;
-						String out = " file count for " + fileNames.get(i)
-								+ " = " + count + " total files Count "
-								+ totalCount + " dedup count "
-								+ dedup.getCount();
+			default:
+				System.out.println("Please enter a valid task type");
+			}
+
+			for (int i = 0; i < fileNames.size(); i++) {
+				try {
+
+					CustomParser parser = new CustomParser();
+					Metadata metadata = new Metadata();
+					File f = new File(args[0] + "/" + fileNames.get(i));
+
+					ToHTMLContentHandler h = new ToHTMLContentHandler();
+					long count = parser.parseWithCount(new FileInputStream(f),
+							h, metadata, new ParseContext(), dedup, true);
+					totalCount = totalCount + count;
+					String out = " Job count for " + fileNames.get(i) + " = "
+							+ count + "; total jobs count till now "
+							+ totalCount;
+					String dedupOut = ", total unique job count (deduplication) "
+							+ dedup.getCount();
+					if (withDedup==1) {
+						System.out.println(out + dedupOut);
+						output.append(out + dedupOut + "\n");
+					} else if(withDedup==0) {
 						System.out.println(out);
 						output.append(out + "\n");
-					} catch (Exception e) {
-						e.printStackTrace();
 					}
+					else if(withDedup==2){
+						dedup.findNearlyDuplicates();
+						System.out.println(dedup.getNearlyDedupCount());
+					}
+						
 
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-				DateFormat dateFormat2 = new SimpleDateFormat(
-						"yyyy/MM/dd HH:mm:ss.SSS");
-				Calendar cal2 = Calendar.getInstance();
-				System.out.println("Parse start time: "
-						+ dateFormat2.format(cal2.getTime()));
-				dedup.findNearlyDuplicates();
 
-				System.out.println("Get Deduplicates"
-						+ dedup.getNearlyDedupCount());
-
-				PrintWriter writer = new PrintWriter("output.txt", "UTF-8");
-				writer.println(output);
-				writer.close();
-				break;
-			case 1:
-				// with deduplication
-				break;
-			default:
-				System.out.println("Please enter a valid task number");
 			}
+			DateFormat dateFormat2 = new SimpleDateFormat(
+					"yyyy/MM/dd HH:mm:ss.SSS");
+			Calendar cal2 = Calendar.getInstance();
+			System.out.println("Parse start time: "
+					+ dateFormat2.format(cal2.getTime()));
+			dedup.findNearlyDuplicates();
+
+			System.out
+					.println("Get Deduplicates" + dedup.getNearlyDedupCount());
+
+			PrintWriter writer = new PrintWriter("output.txt", "UTF-8");
+			writer.println(output);
+			writer.close();
 		} else {
 			System.out
 					.println("2 arguments are required, 1st one is tsv input directory and 2nd one is the deduplication flag");

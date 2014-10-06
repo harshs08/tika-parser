@@ -39,6 +39,8 @@ public class CustomParser implements Parser {
 	
 	private long count = 0;
 	
+	private boolean withDedup;
+	
 	private Deduplication dedup;
 
 	public Set<MediaType> getSupportedTypes(ParseContext context) {
@@ -50,9 +52,10 @@ public class CustomParser implements Parser {
 	private static final Matcher rowMatcher = xpathparser.parse("/xhtml:html/xhtml:body/xhtml:table/xhtml:tr/descendant::node()");
 	
 	public long  parseWithCount(InputStream stream, ContentHandler handler,
-			Metadata metadata, ParseContext context , Deduplication dedup) throws IOException,
+			Metadata metadata, ParseContext context , Deduplication dedup, boolean withDedup) throws IOException,
 			SAXException, TikaException{
 		this.dedup = dedup;
+		this.withDedup = withDedup;
 		parse(stream, handler, metadata, context);
 		return count;
 	}
@@ -156,6 +159,7 @@ public class CustomParser implements Parser {
 				xhtml.endElement("table");
 				xhtml.endDocument();
 				count++;
+				if(withDedup)
 				dedup.calculateOriginalDocs(file,map.get(FieldConstants.URL));
 				map.clear();
 				file.delete();
