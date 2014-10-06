@@ -17,7 +17,6 @@ Python for task 4
 # Operating System used:
 Mac OS X/ Linux 
 
-----------------------------------------------------------------------------------------------------------------------------------
 
 # Java Compiling Instructions:
 
@@ -29,7 +28,6 @@ Mac OS X/ Linux
 	
 		javac -cp "./res/*" src/main/java/com/parse/deduplication/*.java src/main/java/com/parse/tika/*.java
 
-----------------------------------------------------------------------------------------------------------------------------------
 
 # Java Execution Instructions:
 
@@ -45,7 +43,6 @@ Mac OS X/ Linux
 		
 		java -cp "./src/main/java/:./res/*" com.parse.tika.App ./src/main/resources/input 1
 
-----------------------------------------------------------------------------------------------------------------------------------
 
 # Python Compiling Instructions:
 
@@ -54,7 +51,6 @@ Download and installation instruction:
 1.	Install and download ETLLib per the instructions, here:   https://github.com/chrismattmann/etllib/blob/master/README.md
 2.	Place the customtsvtojson.py in the following folder path PROJECT_PATH /etllib/etl
 
-----------------------------------------------------------------------------------------------------------------------------------
 
 Python Execution Instructions:
 
