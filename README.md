@@ -5,6 +5,10 @@
 3. Akanksha Ramesh
 4. Aishwarya Venkatesh
 
+# Jar Files Location
+https://github.com/harshs08/tika-parser/tree/harsh/res
+
+
 
 # Programming Language used:
 Java for tasks 1, 2, 3, 5
