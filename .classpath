@@ -28,7 +28,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="res/tika-app-1.6.jar"/>
-	<classpathentry kind="lib" path="/home/tdemirel/Downloads/fastutil-6.3.jar"/>
-	<classpathentry kind="lib" path="/home/tdemirel/Downloads/guava-13.0-rc1.jar"/>
+	<classpathentry kind="lib" path="res/fastutil-6.3.jar"/>
+	<classpathentry kind="lib" path="res/guava-13.0-rc1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
