@@ -50,7 +50,7 @@ public class App {
 			case 1:
 				withDedup = 1;
 				break;
-				
+
 			case 2:
 				withDedup = 2;
 				break;
@@ -84,9 +84,9 @@ public class App {
 					}
 					else if(withDedup==2){
 						dedup.findNearlyDuplicates();
-						System.out.println(dedup.getNearlyDedupCount());
+						System.out.println(out + ", total unique job count (nearly duplicates) " +  dedup.getNearlyDedupCount());
 					}
-						
+
 
 				} catch (Exception e) {
 					e.printStackTrace();
